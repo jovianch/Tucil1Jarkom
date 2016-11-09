@@ -33,12 +33,12 @@ int main(int argc, char *argv[]) {
     }
 
     if ((server = gethostbyname(argv[1])) == NULL)
-        error("ERROR: Receiver Address is Unknown or Wrong.\n");
+        error("FATAL: Receiver Address is Unknown or Wrong.\n");
 
     // creating IPv4 data stream socket
-    printf("Creating socket to %s Port %s...\n", argv[1], argv[2]);
+    printf("Membuat socket untuk koneksi ke %s:%s ...\n", argv[1], argv[2]);
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
-        error("ERROR: Create socket failed.\n");
+        error("FATAL: Gagal membuat socket.\n");
 
     // flag set to 1 (connection is established)
     isSocketOpen = 1;
@@ -52,10 +52,10 @@ int main(int argc, char *argv[]) {
     // open the text file
     tFile = fopen(argv[argc - 1], "r");
     if (tFile == NULL)
-        error("ERROR: File text not Found.\n");
+        error("FATAL: File teks tidak ditemukan.\n");
 
     if (pthread_create(&thread[0], NULL, childProcess, 0) != 0)
-        error("ERROR: Failed to create thread for child. Please free some space.\n");
+        error("FATAL: Gagal membuat thread untuk child process.\n");
 
     // this is the parent process
     // use as char transmitter from the text file
@@ -64,9 +64,9 @@ int main(int argc, char *argv[]) {
     while ((buf[0] = fgetc(tFile)) != EOF) {
         if (isXON) {
             if (sendto(sockfd, buf, BUFMAX, 0, (const struct sockaddr *) &receiverAddr, receiverAddrLen) != BUFMAX)
-                error("ERROR: sendto() sent buffer with size more than expected.\n");
+                error("FATAL: sendto() buffer dikirim lebih dari batas size\n");
 
-            printf("Sending byte no. %d: ", counter++);
+            printf("Mengirim byte ke-%d: ", counter++);
             switch (buf[0]) {
                 case CR: printf("\'Carriage Return\'\n");
                     break;
@@ -81,13 +81,13 @@ int main(int argc, char *argv[]) {
             }
         } else {
             while (!isXON) {
-                printf("Waiting for XON...\n");
+                printf("Menunggu XON...\n");
                 sleep(1);
             }
             if (sendto(sockfd, buf, BUFMAX, 0, (const struct sockaddr *) &receiverAddr, receiverAddrLen) != BUFMAX)
-                error("ERROR: sendto() sent buffer with size more than expected.\n");
+                error("FATAL: endto() buffer dikirim lebih dari batas size\n");
 
-            printf("Sending byte no. %d: ", counter++);
+            printf("Mengirim byte ke-%d: ", counter++);
             switch (buf[0]) {
                 case CR: printf("\'Carriage Return\'\n");
                     break;
@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
                 case Endfile:
                     printf("\'End of File\'\n");
                     break;
-                    //case 25:	break;
+                    //case 25:  break;
                 default: printf("\'%c\'\n", buf[0]);
                     break;
             }
@@ -129,19 +129,17 @@ void error(const char *message) {
 void *childProcess(void *threadid) {
     // child process
     // read if there is XON/XOFF sent by receiver using recvfrom()
-    struct sockaddr_in srcAddr;
-    int srcLen = sizeof (srcAddr);
+    struct sockaddr_in sourceAddress;
+    int srcLen = sizeof (sourceAddress);
     while (isSocketOpen) {
-        if (recvfrom(sockfd, xbuf, BUFMAX, 0, (struct sockaddr *) &srcAddr, (socklen_t *) & srcLen) != BUFMAX)
-            error("ERROR: recvfrom() receive buffer with size more than expected.\n");
+        if (recvfrom(sockfd, xbuf, BUFMAX, 0, (struct sockaddr *) &sourceAddress, (socklen_t *) & srcLen) != BUFMAX)
+            error("FATAL: recvfrom() receive buffer with size more than expected.\n");
         if (xbuf[0] == XOFF) {
             isXON = false;
-            printf("[XOFF] Receiving XOFF. Rest a while buddy...\n");
+            printf("XOFF diterima.\n");
         } else if (xbuf[0] == XON) {
             isXON = true;
-            printf("[XON] Receiving XON. Work again!\n");
-        } else {
-            printf("What the hell man?\n");
+            printf("XON diterima.\n");
         }
     }
 

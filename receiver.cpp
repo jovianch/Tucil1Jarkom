@@ -53,6 +53,7 @@ int main(int argc, char *argv[]) {
     host.sin_port = htons(atoi(argv[1]));
     host.sin_addr.s_addr = INADDR_ANY;
 
+    printf("Binding pada %s:%s",argv[0],argv[0]);
     if (bind(sockfd, (struct sockaddr*) &host, sizeof (host)) < 0)
         errOut("FATAL: Binding gagal.\n");
 
