@@ -1,6 +1,6 @@
 /* 
  * File : dcomm.h 
- */ 
+ */
 
 #ifndef _RECEIVER_H_ 
 #define _RECEIVER_H_ 
@@ -15,7 +15,7 @@
 #include <netdb.h>
 #include <string.h>
 
-/* ASCII Const */ 
+/* ASCII Const */
 #define SOH 1 /* Start of Header Character */
 #define STX 2 /* Start of Text Character */
 #define ETX 3 /* End of Text Character */ 
@@ -28,11 +28,11 @@
 #define Endfile 26 /* End of file character */
 #define ESC 27 /* ESC key */ 
 
-/* XON/XOFF protocol */ 
+/* XON/XOFF protocol */
 #define XON (0x11) 
 #define XOFF (0x13) 
 
-/* Const */ 
+/* Const */
 #define BYTESIZE 256 /* The maximum value of a byte */
 #define MAXLEN 1024 /* Maximum messages length */ 
 
@@ -46,21 +46,22 @@
 #define RXQSIZE 8
 
 typedef unsigned char Byte;
+
 typedef struct QTYPE {
- 	unsigned int count;
- 	unsigned int front;
- 	unsigned int rear;
- 	unsigned int maxsize;
- 	Byte *data;
+    unsigned int count;
+    unsigned int front;
+    unsigned int rear;
+    unsigned int maxsize;
+    Byte *data;
 } QTYPE;
 
 typedef struct MESGB {
- 	unsigned int soh;
- 	unsigned int stx;
- 	unsigned int etx;
- 	Byte checksum;
- 	Byte msgno;
- 	Byte *data;
+    unsigned int soh;
+    unsigned int stx;
+    unsigned int etx;
+    Byte checksum;
+    Byte msgno;
+    Byte *data;
 } MESGB;
 
 /* FUNCTIONS AND PROCEDURES */
