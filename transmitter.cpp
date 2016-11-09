@@ -68,14 +68,13 @@ int main(int argc, char *argv[]) {
 
             printf("Mengirim byte ke-%d: ", counter++);
             switch (buf[0]) {
-                case CR: printf("\'Carriage Return\'\n");
+                case CR: printf("\'CR\'\n");
                     break;
-                case LF: printf("\'Line Feed\'\n");
+                case LF: printf("\'LF\'\n");
                     break;
                 case Endfile:
-                    printf("\'End of File\'\n");
-                    break;
-                    //case 25:	break;
+                    printf("\'EOF\'\n");
+                    break;;
                 default: printf("\'%c\'\n", buf[0]);
                     break;
             }
@@ -109,14 +108,8 @@ int main(int argc, char *argv[]) {
     sendto(sockfd, buf, BUFMAX, 0, (const struct sockaddr *) &receiverAddr, receiverAddrLen);
     fclose(tFile);
 
-    printf("Byte sending done! Closing sockets...\n");
     close(sockfd);
     isSocketOpen = 0;
-    printf("Socket Closed!\n");
-
-    // finishing program and closing
-    printf("TRANSMITTER Finished transmitting bytes!\n");
-    printf("TRANSMITTER saying goodbye and thanks!\n");
 
     return 0;
 }

@@ -45,8 +45,6 @@ int main(int argc, char *argv[]) {
     pthread_t thread[1];
 
     //Binding Socket
-    printf("Binding pada %s:%s\n",argv[1],argv[1]);
-
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
         printf("FATAL: Gagal membuat socket.\n");
 
@@ -55,6 +53,7 @@ int main(int argc, char *argv[]) {
     host.sin_port = htons(atoi(argv[1]));
     host.sin_addr.s_addr = INADDR_ANY;
 
+    printf("Binding pada %s:%s",argv[0],argv[0]);
     if (bind(sockfd, (struct sockaddr*) &host, sizeof (host)) < 0)
         errOut("FATAL: Binding gagal.\n");
 
@@ -124,7 +123,7 @@ static Byte *rcvchar(int sockfd, QTYPE *queue) {
 
     // if the buffer reaches Minimum Upperlimit, send XOFF to Transmitter
     if (queue->count >= (MIN_UPPERLIMIT) && sent_xonxoff == XON) {
-        printf("Buffer > minimum upperlimit.\nMengirim XOFF.\n");
+        printf("Buffer > minimum upperlimit.\nMengirim XOFF.");
         send_xoff = true;
         send_xon = false;
         b[0] = sent_xonxoff = XOFF;
@@ -188,7 +187,7 @@ static Byte *q_get(QTYPE *queue, Byte *data) {
     If the number of characters in the receive buffer is below certain  level, then send
     XON. Increment front index and check for wraparound. */
     if (queue->count <= MAX_LOWERLIMIT && sent_xonxoff == XOFF) {
-        printf("Buffer < maximum lowerlimit\nMengirim XON.\n");
+        printf("Buffer < maximum lowerlimit\nMengirim XON.");
         send_xoff = false;
         send_xon = true;
 

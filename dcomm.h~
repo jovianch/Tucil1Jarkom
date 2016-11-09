@@ -4,16 +4,6 @@
 #ifndef _DCOMM_H_
 #define _DCOMM_H_
 
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <stdlib.h>
-
 /* ASCII Const */
 #define SOH 1 /* Start of Header Character */
 #define STX 2 /* Start of Text Character */
