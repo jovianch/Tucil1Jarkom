@@ -1,40 +1,58 @@
 /* File : T1_rx.cpp */
+#include <stdio.h>
+#include <pthread.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <string.h>
+#include "dcomm.h"
 
-#include "receiver.h"
+/* Delay to adjust speed of consuming buffer, in milliseconds */
+#define DELAY 500
+
+/* Define receive buffer size */
+#define RXQSIZE 8
+
+/* Supplementary */
+#define bzero(p, size) (void)memset((p), 0 , (size))
+#define MIN_UPPERLIMIT 5
+#define MAX_LOWERLIMIT 2
+
+/* FUNCTIONS AND PROCEDURES */
+static Byte *rcvchar(int sockfd, QTYPE *queue);
+static Byte *q_get(QTYPE *, Byte *);
+void *childRProcess(void * threadid);
+void error(const char* message);
 
 Byte rxbuf[RXQSIZE];
 QTYPE rcvq = {0, 0, 0, RXQSIZE, rxbuf};
 QTYPE *rxq = &rcvq;
 Byte sent_xonxoff = XON;
-unsigned send_xon = 0,
-        send_xoff = 0;
+Boolean send_xon = false, send_xoff = false;
 int endFileReceived;
 
 /* Socket */
 int sockfd; // listen on sock_fd
-struct sockaddr_in adhost;
-struct sockaddr_in srcAddr;
-unsigned int srcLen = sizeof (srcAddr);
+struct sockaddr_in host;
+struct sockaddr_in sourceAddress;
+unsigned int sourceLength = sizeof (sourceAddress);
 
 int main(int argc, char *argv[]) {
+    //create thread
     pthread_t thread[1];
 
-    if (argc < 2) {
-        // case if arguments are less than specified
-        printf("Please use the program with arguments: %s <port>\n", argv[0]);
-        return 0;
-    }
-
-    printf("Creating socket to self in Port %s...\n", argv[1]);
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
         printf("ERROR: Create socket failed.\n");
 
-    bzero((char*) &adhost, sizeof (adhost));
-    adhost.sin_family = AF_INET;
-    adhost.sin_port = htons(atoi(argv[1]));
-    adhost.sin_addr.s_addr = INADDR_ANY;
+    bzero((char*) &host, sizeof (host));
+    host.sin_family = AF_INET;
+    host.sin_port = htons(atoi(argv[1]));
+    host.sin_addr.s_addr = INADDR_ANY;
 
-    if (bind(sockfd, (struct sockaddr*) &adhost, sizeof (adhost)) < 0)
+    if (bind(sockfd, (struct sockaddr*) &host, sizeof (host)) < 0)
         error("ERROR: Binding failed.\n");
 
     endFileReceived = 0;
@@ -54,9 +72,6 @@ int main(int argc, char *argv[]) {
             endFileReceived = 1;
     }
 
-    printf("Receiving End of File... Receiver Complete!\n");
-    printf("Waiting for the next transmission...\n");
-
     return 0;
 }
 
@@ -74,7 +89,7 @@ static Byte *rcvchar(int sockfd, QTYPE *queue) {
     char b[1];
     static int counter = 1;
 
-    if (recvfrom(sockfd, tempBuf, 1, 0, (struct sockaddr *) &srcAddr, &srcLen) < 0)
+    if (recvfrom(sockfd, tempBuf, 1, 0, (struct sockaddr *) &sourceAddress, &sourceLength) < 0)
         error("ERROR: Failed to receive character from socket\n");
 
     current = (Byte *) malloc(sizeof (Byte));
@@ -110,7 +125,7 @@ static Byte *rcvchar(int sockfd, QTYPE *queue) {
         send_xon = 0;
         b[0] = sent_xonxoff = XOFF;
 
-        if (sendto(sockfd, b, 1, 0, (struct sockaddr *) &srcAddr, srcLen) < 0)
+        if (sendto(sockfd, b, 1, 0, (struct sockaddr *) &sourceAddress, sourceLength) < 0)
             error("ERROR: Failed to send XOFF.\n");
     }
 
@@ -174,7 +189,7 @@ static Byte *q_get(QTYPE *queue, Byte *data)
         send_xoff = 0;
 
         b[0] = sent_xonxoff = XON;
-        if (sendto(sockfd, b, 1, 0, (struct sockaddr *) &srcAddr, srcLen) < 0)
+        if (sendto(sockfd, b, 1, 0, (struct sockaddr *) &sourceAddress, sourceLength) < 0)
             error("ERROR: Failed to send XON.\n");
     }
 

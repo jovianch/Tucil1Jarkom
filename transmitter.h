@@ -31,10 +31,7 @@
 /* Const */
 #define BYTESIZE 256 /* The maximum value of a byte */
 #define MAXLEN 1024 /* Maximum messages length */ 
-#define BUFMAX 1 /* Maximum size of buffer that can be sent */
 
-void error(const char *message);
 
-void *childProcess(void *threadid);
 
 #endif

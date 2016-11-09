@@ -1,5 +1,6 @@
 /* File 	: transmitter.c */
-#include "transmitter.h"
+#include "dcomm.h"
+#define BUFMAX 1 /* Maximum size of buffer that can be sent */
 
 /* NETWORKS */
 int sockfd, port; // sock file descriptor and port number
@@ -16,6 +17,11 @@ char xbuf[BUFMAX + 1]; // buffer for receiving XON/XOFF characters
 /* FLAGS */
 int isXON = 1; // flag for XON/XOFF sent
 int isSocketOpen; // flag to indicate if connection from socket is done
+
+
+/* FUNCTIONS AND PROCEDURES */
+void error(const char *message);
+void *childProcess(void *threadid);
 
 int main(int argc, char *argv[]) {
     pthread_t thread[1];
