@@ -15,7 +15,7 @@ char buf[BUFMAX + 1]; // buffer for character to send
 char xbuf[BUFMAX + 1]; // buffer for receiving XON/XOFF characters
 
 /* FLAGS */
-int isXON = 1; // flag for XON/XOFF sent
+bool isXON = true; // flag for XON/XOFF sent
 int isSocketOpen; // flag to indicate if connection from socket is done
 
 
@@ -135,10 +135,10 @@ void *childProcess(void *threadid) {
         if (recvfrom(sockfd, xbuf, BUFMAX, 0, (struct sockaddr *) &srcAddr, (socklen_t *) & srcLen) != BUFMAX)
             error("ERROR: recvfrom() receive buffer with size more than expected.\n");
         if (xbuf[0] == XOFF) {
-            isXON = 0;
+            isXON = false;
             printf("[XOFF] Receiving XOFF. Rest a while buddy...\n");
         } else if (xbuf[0] == XON) {
-            isXON = 1;
+            isXON = true;
             printf("[XON] Receiving XON. Work again!\n");
         } else {
             printf("What the hell man?\n");
