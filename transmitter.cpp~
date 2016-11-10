@@ -1,22 +1,18 @@
-/* File 	: transmitter.c */
+/* File : transmitter.cpp */
 #include "dcomm.h"
-#define BUFMAX 1 /* Maximum size of buffer that can be sent */
 
-/* NETWORKS */
-int sockfd, port; // sock file descriptor and port number
+#define BUFMAX 1 //Ukuran maksimum buffer
+
+/* VARIABLE */
+int sockfd, port;
 struct hostent *server;
-struct sockaddr_in receiverAddr; // receiver host information
-int receiverAddrLen = sizeof (receiverAddr);
-
-/* FILE AND BUFFERS */
-FILE *tFile; // file descriptor
-char *receiverIP; // buffer for Host IP address
-char buf[BUFMAX + 1]; // buffer for character to send
-char xbuf[BUFMAX + 1]; // buffer for receiving XON/XOFF characters
-
-/* FLAGS */
-bool isXON = true; // flag for XON/XOFF sent
-int isSocketOpen; // flag to indicate if connection from socket is done
+struct sockaddr_in rcvAdr;
+int rcvAdrLen = sizeof (rcvAdr);
+FILE *tFile;
+char buf[BUFMAX + 1]; //buffer char
+char xbuf[BUFMAX + 1]; // buffer XON/XOFF
+bool isXON = true; 
+int isSocketOpen; 
 
 
 /* FUNCTIONS AND PROCEDURES */
@@ -44,10 +40,10 @@ int main(int argc, char *argv[]) {
     isSocketOpen = 1;
 
     // initializing the socket host information
-    memset(&receiverAddr, 0, sizeof (receiverAddr));
-    receiverAddr.sin_family = AF_INET;
-    bcopy((char *) server->h_addr, (char *) &receiverAddr.sin_addr.s_addr, server->h_length);
-    receiverAddr.sin_port = htons(atoi(argv[2]));
+    memset(&rcvAdr, 0, sizeof (rcvAdr));
+    rcvAdr.sin_family = AF_INET;
+    bcopy((char *) server->h_addr, (char *) &rcvAdr.sin_addr.s_addr, server->h_length);
+    rcvAdr.sin_port = htons(atoi(argv[2]));
 
     // open the text file
     tFile = fopen(argv[argc - 1], "r");
@@ -63,7 +59,7 @@ int main(int argc, char *argv[]) {
     int counter = 1;
     while ((buf[0] = fgetc(tFile)) != EOF) {
         if (isXON) {
-            if (sendto(sockfd, buf, BUFMAX, 0, (const struct sockaddr *) &receiverAddr, receiverAddrLen) != BUFMAX)
+            if (sendto(sockfd, buf, BUFMAX, 0, (const struct sockaddr *) &rcvAdr, rcvAdrLen) != BUFMAX)
                 error("FATAL: sendto() buffer dikirim lebih dari batas size\n");
 
             printf("Mengirim byte ke-%d: ", counter++);
@@ -83,7 +79,7 @@ int main(int argc, char *argv[]) {
                 printf("Menunggu XON...\n");
                 sleep(1);
             }
-            if (sendto(sockfd, buf, BUFMAX, 0, (const struct sockaddr *) &receiverAddr, receiverAddrLen) != BUFMAX)
+            if (sendto(sockfd, buf, BUFMAX, 0, (const struct sockaddr *) &rcvAdr, rcvAdrLen) != BUFMAX)
                 error("FATAL: endto() buffer dikirim lebih dari batas size\n");
 
             printf("Mengirim byte ke-%d: ", counter++);
@@ -105,7 +101,7 @@ int main(int argc, char *argv[]) {
 
     // sending endfile to receiver, marking the end of data transfer
     buf[0] = Endfile;
-    sendto(sockfd, buf, BUFMAX, 0, (const struct sockaddr *) &receiverAddr, receiverAddrLen);
+    sendto(sockfd, buf, BUFMAX, 0, (const struct sockaddr *) &rcvAdr, rcvAdrLen);
     fclose(tFile);
 
     close(sockfd);
